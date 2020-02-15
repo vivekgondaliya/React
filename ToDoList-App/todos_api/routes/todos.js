@@ -21,9 +21,13 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:todoId', (req, res) => {
-    res.json({
-        'message' : 'returns todo with id: '+ req.params.todoId
-    });
+    db.Todo.findById(req.params.todoId)
+    .then((todo) => {
+        res.json(todo);
+    })
+    .catch( (error) => {
+        res.send(error);
+    })
 });
 
 router.post('/', (req, res) => {
@@ -35,6 +39,28 @@ router.post('/', (req, res) => {
         res.send(error);
     })
     
+});
+
+router.put('/:todoId', (req, res) => {
+    db.Todo.findOneAndUpdate({ _id: req.params.todoId }, req.body, {new : true} )
+    .then( todo => {
+        res.json(todo);
+    })
+    .catch( (error) => {
+        res.send(error);
+    });
+});
+
+router.delete('/:todoId', (req, res) => {
+    db.Todo.findOneAndDelete({ _id: req.params.todoId })
+    .then( todo => {
+        res.json({
+            message: 'Deleted ' + todo.name.toUpperCase()
+        });
+    })
+    .catch( (error) => {
+        res.send(error);
+    });
 });
 
 
