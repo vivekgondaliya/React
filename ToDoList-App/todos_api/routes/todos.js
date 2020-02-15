@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const helpers = require('../helpers/todos');
 
 /*
     GET     - /api/todos
@@ -10,58 +11,13 @@ const router = require('express').Router();
 
 const db = require('../models');
 
-router.get('/', (req, res) => {
-    db.Todo.find()
-    .then((todos) => {
-        res.json(todos);
-    })
-    .catch( (error) => {
-        res.send(error);
-    })
-});
+router.route('/')
+    .get(helpers.getTodos)
+    .post(helpers.createTodo);
 
-router.get('/:todoId', (req, res) => {
-    db.Todo.findById(req.params.todoId)
-    .then((todo) => {
-        res.json(todo);
-    })
-    .catch( (error) => {
-        res.send(error);
-    })
-});
-
-router.post('/', (req, res) => {
-    db.Todo.create(req.body)
-    .then( newTodo => {
-        res.status(201).json(newTodo);
-    })
-    .catch( (error) => {
-        res.send(error);
-    })
-    
-});
-
-router.put('/:todoId', (req, res) => {
-    db.Todo.findOneAndUpdate({ _id: req.params.todoId }, req.body, {new : true} )
-    .then( todo => {
-        res.json(todo);
-    })
-    .catch( (error) => {
-        res.send(error);
-    });
-});
-
-router.delete('/:todoId', (req, res) => {
-    db.Todo.findOneAndDelete({ _id: req.params.todoId })
-    .then( todo => {
-        res.json({
-            message: 'Deleted ' + todo.name.toUpperCase()
-        });
-    })
-    .catch( (error) => {
-        res.send(error);
-    });
-});
-
+router.route('/:todoId')
+    .get(helpers.getOneTodo)
+    .put(helpers.updateTodo)
+    .delete(helpers.deleteTodo);
 
 module.exports = router;
