@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import TodoItem from './TodoItem';
 import TodoForm from './TodoForm';
 
-const APIURL = '/api/todos'
+import * as apiCalls from './api';
 
 class TodoList extends Component{
     state = {
@@ -14,63 +14,47 @@ class TodoList extends Component{
         this.loadTodos();
     }
 
-    loadTodos = () =>{
+    loadTodos = async() =>{
         // axios.get(APIURL)
         // .then(response => {
         //     //TODO: error handling 
         //     const todos = response.data;
         //     this.setState({todos});
         // });
-        fetch(APIURL)
-        .then(resp => {
-            if(!resp.ok){
-                if(resp.status >=400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = {errorMessage : data.message};
-                        throw err;
-                    });
-                }
-                else {
-                    let err = {errorMessage : "Please try again later, server is down at the moment."};
-                        throw err;
-                }
-            }
-            return resp.json();
-        })
-        .then(todos => this.setState({todos}));
+        let todos = await apiCalls.getTodos();
+        this.setState({todos});
     }
 
-    addTodoItem = (item) => {
-        fetch(APIURL, {
-            method : 'post',
-            headers : new Headers({
-                'Content-Type' : 'application/json'
-            }),
-            body: JSON.stringify({name: item})
-        })
-        .then(resp => {
-            if(!resp.ok){
-                if(resp.status >=400 && resp.status < 500) {
-                    return resp.json().then(data => {
-                        let err = {errorMessage : data.message};
-                        throw err;
-                    });
-                }
-                else {
-                    let err = {errorMessage : "Please try again later, server is down at the moment."};
-                        throw err;
-                }
+    addTodoItem = async(item) => {
+        let newTodo = await apiCalls.addTodo(item);
+        this.setState({todos : [...this.state.todos, newTodo]});
+    }
+
+    deleteTodoItem = async(id) => {
+        await apiCalls.deleteTodo(id);
+        const todos = this.state.todos.filter( item => item._id !== id);
+        this.setState({todos});
+    }
+
+    toggleTodoItem = async(todo) => {
+        const toggledTodo = await apiCalls.updateTodo(todo);
+        const todos = this.state.todos.map( item => {
+            if(item._id === toggledTodo._id){
+                item.completed = toggledTodo.completed;
             }
-            return resp.json();
-        })
-        .then(newTodo => {
-            this.setState({todos : [...this.state.todos, newTodo]});
+            return item;
         });
+        this.setState({todos});
     }
 
     render(){
         const todoItems = this.state.todos.map(item => {
-            return <TodoItem key={item._id} item={item}/>
+            return <TodoItem 
+                    key={item._id} 
+                    item={item} 
+                    onToggle={this.toggleTodoItem}
+                    onDelete={this.deleteTodoItem}
+                    />
         });
         return(
             <div>
