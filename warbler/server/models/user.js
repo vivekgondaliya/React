@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
 });
 
 //mongoose - presave hook
-userSchema.pre("save", async function(){
+userSchema.pre("save", async function(next){
     try{
         if(!this.isModified("password")){
             return next();
