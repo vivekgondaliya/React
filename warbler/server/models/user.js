@@ -21,6 +21,32 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+//mongoose - presave hook
+userSchema.pre("save", async function(){
+    try{
+        if(!this.isModified("password")){
+            return next();
+        }
+        //salting
+        let hashedPassword = await bcrypt.hash(this.password, 10);
+        this.password = hashedPassword;
+        return next();
+    }
+    catch(err){
+        return next(err);
+    }
+});
+
+userSchema.method.comparePassword = async function(candidatePassword, next){
+    try{
+        let isMatch = await bcrypt.compare(candidatePassword, this.password);
+        return isMatch;
+    }
+    catch(err){
+        return next(err);
+    }
+}
+
 const User = mongoose.model("User", userSchema);
 
 module.exports = User;
