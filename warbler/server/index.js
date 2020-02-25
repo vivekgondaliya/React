@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 //routes
 
 app.use((req, res, next) => {
-    let err = new Error();
+    let err = new Error("Not Found");
     err.status = 404;
     next(err);
 });
